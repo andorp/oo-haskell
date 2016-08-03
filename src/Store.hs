@@ -4,21 +4,27 @@ module Store
 
 import Data.IORef
 
+-- It looks like an OO object...
+data Store a = Store {
+      save :: a -> IO ()
+    , load :: IO a
+    }
 
-newStore :: a -> IO (a -> IO (), IO a)
+-- It looks like a factory method...
+newStore :: a -> IO (Store a)
 newStore x = do
-    store <- newIORef x
+    storeRef <- newIORef x
 
-    let save y = writeIORef store y
+    let saveImp y = writeIORef storeRef y
 
-    let load = readIORef store
+    let loadImp = readIORef storeRef
 
-    return (save, load)
+    return $ Store saveImp loadImp
 
 
 main :: IO ()
 main = do
-    (save, load) <- newStore 0
-    save 3
-    x <- load
+    store <- newStore 0
+    save store 3
+    x <- load store
     print x
