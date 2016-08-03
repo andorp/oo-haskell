@@ -2,6 +2,8 @@
 module Store
     ( Store(store, save, load)
     , StoreObj
+    , ResetStore(resetStore, reset)
+    , ResetStoreObj
     ) where
 
 import Data.IORef
@@ -45,9 +47,39 @@ instance Store StoreObj where
     save  = save_
     load  = load_
 
+
+class Store s => ResetStore s where
+    resetStore :: a -> IO (s a)
+    reset      :: s a -> IO ()
+
+data ResetStoreObj a = ResetStoreObj {
+      store_ :: StoreObj a -- This could be (Store s), imagine the possibilities.
+    , reset_ :: IO ()
+    }
+
+newResetStore :: a -> IO (ResetStoreObj a)
+newResetStore x = do
+    s <- store x
+
+    let resetImp = save s x
+
+    return $ ResetStoreObj s resetImp
+
+instance Store ResetStoreObj where
+    store     = newResetStore
+    load  r   = load (store_ r)
+    save  r x = save (store_ r) x
+
+instance ResetStore ResetStoreObj where
+    resetStore = newResetStore
+    reset      = reset_
+
 main :: IO ()
 main = do
-    s :: StoreObj Int <- store 0
+    s :: ResetStoreObj Int <- store 0
     save s 3
-    x <- load s
-    print x
+    x1 <- load s
+    print x1
+    reset s
+    x2 <- load s
+    print x2
