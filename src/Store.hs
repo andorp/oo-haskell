@@ -1,25 +1,24 @@
 module Store
     ( newStore
-    , save
-    , load
     ) where
 
 import Data.IORef
-import System.IO.Unsafe (unsafePerformIO)
 
-newStore :: a -> IO (IORef a)
-newStore = newIORef
 
-save :: IORef a -> a -> IO ()
-save = writeIORef
+newStore :: a -> IO (a -> IO (), IO a)
+newStore x = do
+    store <- newIORef x
 
-load :: IORef a -> IO a
-load = readIORef
+    let save y = writeIORef store y
+
+    let load = readIORef store
+
+    return (save, load)
+
 
 main :: IO ()
 main = do
-    store <- newStore 0
-    save store 3
-    x <- load store
+    (save, load) <- newStore 0
+    save 3
+    x <- load
     print x
-
