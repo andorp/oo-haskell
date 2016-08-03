@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Store
-    ( newStore
+    ( Store(store, save, load)
+    , StoreObj
     ) where
 
 import Data.IORef
