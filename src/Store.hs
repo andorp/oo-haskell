@@ -44,10 +44,11 @@ instance Store StoreObj where
     save  = save_
     load  = load_
 
+(#) = flip ($)
 
 main :: IO ()
 main = do
     s :: StoreObj Int <- store 0
-    save s 3
-    x <- load s
+    s # save $ 3
+    x <- s # load
     print x
